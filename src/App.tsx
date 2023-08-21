@@ -10,20 +10,29 @@ function convertToFlag(countryCode: string) {
 }
 
 const App: React.FC = () => {
-  const [location, setLocation] = useState<string>();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [displayLocation, setDisplayLocation] = useState<string>('');
-  const [weather, setWeather] = useState<{
-    time: string[];
-    temperature_2m_max: number[];
-    temperature_2m_min: number[];
-    weathercode: number[];
-  }>();
+  const [location, setLocation] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayLocation, setDisplayLocation] = useState('');
+  const [weather, setWeather] = useState<
+    | {
+        time: string[];
+        temperature_2m_max: number[];
+        temperature_2m_min: number[];
+        weathercode: number[];
+      }
+    | undefined
+  >();
+
+  useEffect(() => {
+    setLocation(localStorage.getItem('location') || '');
+  }, []);
 
   useEffect(() => {
     async function fetchWeather() {
+      if (location?.length < 2) return setWeather(undefined);
       try {
         setIsLoading(true);
+
         // 1) Getting location (geocoding)
         const geoRes = await fetch(
           `https://geocoding-api.open-meteo.com/v1/search?name=${location}`
@@ -54,6 +63,7 @@ const App: React.FC = () => {
     if (!location) return;
 
     fetchWeather();
+    localStorage.setItem('location', location);
   }, [location]);
 
   return (
